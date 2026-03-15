@@ -174,8 +174,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:h
     <div class="chapter" id="ch-inputs" data-layer="inputs">
       <div class="ch-num">01 — Data Sources</div>
       <h3>The data flows in from four places</h3>
-      <p>ElevenLabs: a voice agent, amit reggel diktálsz. Hajni AI feldolgozza, exportálja.</p>
-      <p>MS365: naptárad, Teams üzeneteid, email inbox-od. Valós időben, automatikusan.</p>
+      <p>ElevenLabs: a voice agent you dictate to every morning. Hajni AI processes it and exports the transcript automatically.</p>
+      <p>MS365: your calendar, Teams messages, and email inbox — captured in real time, without lifting a finger.</p>
       <div class="ch-tag amber">🎤 ElevenLabs · Hajni AI</div>
       <div class="ch-tag blue" style="margin-top:6px">🔷 Outlook · Teams · Calendar</div>
     </div>
@@ -183,33 +183,33 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:h
     <div class="chapter" id="ch-sync" data-layer="sync">
       <div class="ch-num">02 — The Engine</div>
       <h3>The engine that never sleeps</h3>
-      <p><strong style="color:#06b6d4">productivity-sync</strong> naponta négyszer fut automatikusan.</p>
-      <p>Reggel 04:00: Full Mode — ElevenLabs + MS365 + Intel + archív snapshot. Napközben: Light Mode — csak email és Teams.</p>
+      <p><strong style="color:#06b6d4">productivity-sync</strong> runs automatically four times a day.</p>
+      <p>04:00 Full Mode — ElevenLabs + MS365 + intel digest + daily archive snapshot. Daytime Light Mode — email and Teams only.</p>
       <div class="ch-tag cyan">⚙ cron: 04:00 · 10:00 · 13:00 · 18:00</div>
     </div>
 
     <div class="chapter" id="ch-outputs" data-layer="outputs">
       <div class="ch-num">03 — Intelligence Layer</div>
       <h3>Everything has its place</h3>
-      <p><strong style="color:#f59e0b">TASKS.md</strong> — az egyetlen igazság forrása. Minden teendő, prioritás, határidő egy helyen.</p>
-      <p><strong style="color:#8b5cf6">NEWSLETTERS.md</strong> — 11 forrás szűrt intelligenciája: McKinsey, HBR, Lenny, The Batch és mások.</p>
-      <p><strong style="color:#94a3b8">memory/archive/</strong> — napi snapshotok, visszakereshető múlt.</p>
+      <p><strong style="color:#f59e0b">TASKS.md</strong> — the single source of truth. Every task, priority, and deadline lives here.</p>
+      <p><strong style="color:#8b5cf6">NEWSLETTERS.md</strong> — filtered intelligence from 11 sources: McKinsey, HBR, Lenny, The Batch, and more.</p>
+      <p><strong style="color:#94a3b8">memory/archive/</strong> — daily snapshots. Your past is searchable.</p>
       <div class="ch-tag amber">★ Single Source of Truth</div>
     </div>
 
     <div class="chapter" id="ch-interface" data-layer="interface">
       <div class="ch-num">04 — The Interface</div>
       <h3>One file. Zero backend.</h3>
-      <p><strong style="color:#10b981">dashboard.html</strong> — egyetlen HTML fájl, File System Access API-val olvas és ír.</p>
-      <p>Kanban board a TASKS.md-ből, intel viewer a NEWSLETTERS.md-ből. Offline fut. Nincs szerver, nincs adatbázis.</p>
+      <p><strong style="color:#10b981">dashboard.html</strong> — a single HTML file that reads and writes via the File System Access API.</p>
+      <p>Kanban board from TASKS.md, intel viewer from NEWSLETTERS.md. Works offline. No server, no database, no cloud dependency.</p>
       <div class="ch-tag emerald">🖥 File System Access API · R/W</div>
     </div>
 
     <div class="chapter" id="ch-full" data-layer="full">
       <div class="ch-num">05 — Always On</div>
-      <h3>Mire felkelsz, már kész</h3>
-      <p>Reggel 4-kor a rendszer feldolgozta az éjjeli üzeneteket, a hangfájlokat, az inbox-ot.</p>
-      <p>Nem kell emlékezni. Nem kell szinkronizálni. Csak megnyitod a dashboardot — és minden ott van.</p>
+      <h3>Done before you wake up</h3>
+      <p>At 4am the system has already processed overnight messages, voice notes, and your inbox.</p>
+      <p>Nothing to remember. Nothing to sync. Just open the dashboard — everything is there.</p>
       <div class="ch-tag cyan">✦ Automated · Continuous · Private</div>
     </div>
 
@@ -325,12 +325,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:h
           <rect x="340" y="433" width="320" height="90" rx="11" fill="none" stroke="#f59e0b" stroke-width="1.5"><animate attributeName="stroke-opacity" values=".65;.15;.65" dur="3.5s" repeatCount="indefinite"/></rect>
           <text x="360" y="461" font-size="8.5" fill="rgba(245,158,11,.45)" font-family="'SF Mono',monospace" letter-spacing="2.5">SINGLE SOURCE OF TRUTH</text>
           <text x="360" y="483" font-size="20" font-weight="600" fill="#f59e0b" font-family="-apple-system,'Helvetica Neue',sans-serif">TASKS.md</text>
-          <text x="360" y="499" font-size="9" fill="rgba(245,158,11,.5)" font-family="'SF Mono',monospace">Aktív feladatlista · Weekly Priority</text>
+          <text x="360" y="499" font-size="9" fill="rgba(245,158,11,.5)" font-family="'SF Mono',monospace">Active task list · Weekly Priority</text>
           <text x="612" y="478" font-size="22" fill="#f59e0b" opacity=".5" font-family="system-ui">★</text>
           <rect x="758" y="438" width="222" height="82" rx="9" fill="url(#gsl)" stroke="#94a3b8" stroke-width=".8" stroke-opacity=".3"/>
           <text x="776" y="460" font-size="11" font-family="system-ui" opacity=".3">📁</text>
           <text x="796" y="460" font-size="9.5" font-weight="600" fill="#94a3b8" font-family="'SF Mono',monospace" opacity=".6">memory/archive/</text>
-          <text x="796" y="474" font-size="9" fill="rgba(148,163,184,.4)" font-family="'SF Mono',monospace">Napi Snapshots</text>
+          <text x="796" y="474" font-size="9" fill="rgba(148,163,184,.4)" font-family="'SF Mono',monospace">Daily Snapshots</text>
           <text x="796" y="487" font-size="8.5" fill="rgba(148,163,184,.28)" font-family="'SF Mono',monospace">tasks_YYYY-MM-DD.md</text>
         </g>
 
@@ -370,7 +370,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:h
 <section class="arch-footer">
   <div class="eyebrow">Ready?</div>
   <h2>Join the waitlist</h2>
-  <p>Korlátozott számú hely. Első tesztelők bekerülnek az alapítói körébe.</p>
+  <p>Limited spots. Early testers get founder-level access.</p>
   <a href="index.html#act6" class="cta-btn">Apply to test →</a>
 </section>
 
@@ -399,23 +399,23 @@ setTimeout(() => {
 const tooltips = {
   'gl-elevenlabs': {
     title: 'ElevenLabs Voice Agent — Hajni AI',
-    body: 'Reggel diktálod a gondolataidat. Hajni AI (ElevenLabs Conversational AI) feldolgozza, a transcript exportálódik az elevenlabs_exports/ mappába. A 04:00-ás sync innen szedi ki az action itemeket.'
+    body: 'Dictate your thoughts every morning. Hajni AI (ElevenLabs Conversational AI) processes the conversation and exports the transcript to elevenlabs_exports/. The 04:00 sync picks up action items from there.'
   },
   'gl-ms365': {
     title: 'MS365 Data Sources',
-    body: 'OC = Outlook Calendar · TM = Teams Messages · OE = Outlook Email. Mind a három forrásból kinyeri a teendőket, határidőket, vállalásokat. Light módban (10:00, 13:00, 18:00) csak ez a három fut.'
+    body: 'OC = Outlook Calendar · TM = Teams Messages · OE = Outlook Email. Tasks, deadlines, and commitments are extracted from all three. In Light Mode (10:00, 13:00, 18:00) only these three sources run.'
   },
   'gl-sync': {
     title: 'productivity-sync — Central Engine',
-    body: 'A rendszer szíve. Naponta 4x fut (cron). 04:00: Full mode — ElevenLabs + MS365 + newsletter intel + daily archive snapshot. 10:00 / 13:00 / 18:00: Light mode — csak email + Teams scan + TASKS.md update.'
+    body: 'The heart of the system. Runs 4x daily via cron. 04:00: Full mode — ElevenLabs + MS365 + newsletter intel + daily archive snapshot. 10:00 / 13:00 / 18:00: Light mode — email + Teams scan + TASKS.md update only.'
   },
   'gl-outputs': {
     title: 'Intelligence Layer',
-    body: 'TASKS.md: az egyetlen igazság forrása, minden teendő itt él. NEWSLETTERS.md: 11 hírlevél (McKinsey, HBR, Lenny, The Batch, stb.) szűrt intel feedje. memory/archive/: napi tasks_YYYY-MM-DD.md snapshotok — a múlt visszakereshető.'
+    body: 'TASKS.md: the single source of truth — every task lives here. NEWSLETTERS.md: filtered intel from 11 newsletters (McKinsey, HBR, Lenny, The Batch, etc.). memory/archive/: daily tasks_YYYY-MM-DD.md snapshots — your past is always searchable.'
   },
   'gl-interface': {
     title: 'dashboard.html — The Interface',
-    body: 'Egyetlen HTML fájl, zero backend. File System Access API-val közvetlenül olvassa és írja a TASKS.md-t és NEWSLETTERS.md-t. Kanban board, intel viewer, offline működés. Nincs szerver, nincs adatbázis, nincs cloud dependency.'
+    body: 'A single HTML file, zero backend. Reads and writes TASKS.md and NEWSLETTERS.md directly via the File System Access API. Kanban board, intel viewer, offline. No server, no database, no cloud dependency.'
   }
 };
 
