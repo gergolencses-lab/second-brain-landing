@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Architecture — Your Second Brain</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06060f;--amber:#f59e0b;--blue:#3b82f6;--cyan:#06b6d4;
+  --purple:#8b5cf6;--slate:#94a3b8;--emerald:#10b981;
+  --text:#e2e8f0;--dim:rgba(255,255,255,0.3);
+  --mono:'SF Mono','Fira Code','JetBrains Mono',monospace;
+  --sans:-apple-system,'Helvetica Neue',Arial,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden}
+
+/* NAV */
+.arch-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 48px;
+  background:rgba(6,6,15,0.88);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.arch-nav .brand{
+  font-size:13px;letter-spacing:1px;color:var(--cyan);
+  font-family:var(--mono);text-decoration:none;
+  display:flex;align-items:center;gap:8px;
+}
+.arch-nav .brand::before{
+  content:'';width:7px;height:7px;background:var(--cyan);
+  border-radius:50%;box-shadow:0 0 8px var(--cyan);
+}
+.back-btn{
+  font-size:12px;color:var(--dim);text-decoration:none;
+  font-family:var(--mono);letter-spacing:1px;transition:color .2s;
+}
+.back-btn:hover{color:var(--text)}
+
+/* HERO */
+.arch-hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 80px;position:relative;
+}
+.arch-hero::after{
+  content:'';position:absolute;bottom:0;left:50%;
+  transform:translateX(-50%);width:1px;height:80px;
+  background:linear-gradient(to bottom,var(--cyan),transparent);
+}
+.eyebrow{
+  font-size:10px;letter-spacing:5px;color:var(--cyan);
+  text-transform:uppercase;font-family:var(--mono);margin-bottom:20px;
+}
+.arch-hero h1{
+  font-size:clamp(36px,5vw,60px);font-weight:200;
+  letter-spacing:-2px;color:#f1f5f9;line-height:1.05;margin-bottom:20px;
+}
+.arch-hero h1 span{color:var(--cyan);font-weight:600}
+.arch-hero .subtitle{
+  font-size:16px;color:var(--dim);max-width:500px;
+  line-height:1.6;margin-bottom:48px;
+}
+.scroll-hint{
+  font-size:11px;color:rgba(255,255,255,0.2);font-family:var(--mono);
+  letter-spacing:2px;display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.scroll-hint::after{content:'↓';font-size:16px;animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* SCROLL STORY */
+.scroll-story{
+  display:flex;
+  max-width:1400px;margin:0 auto;padding:0 48px;
+}
+.text-col{width:360px;flex-shrink:0}
+.chapter{
+  height:100vh;display:flex;flex-direction:column;
+  justify-content:center;
+  padding:0 40px 0 24px;
+  opacity:.2;transition:opacity .5s ease;
+  border-left:2px solid transparent;
+}
+.chapter.active{opacity:1;border-left-color:var(--cyan)}
+.ch-num{
+  font-size:10px;letter-spacing:4px;color:rgba(255,255,255,0.2);
+  font-family:var(--mono);margin-bottom:12px;text-transform:uppercase;
+}
+.chapter.active .ch-num{color:var(--cyan)}
+.chapter h3{font-size:26px;font-weight:300;letter-spacing:-.5px;color:var(--text);margin-bottom:14px;line-height:1.25}
+.chapter p{font-size:14px;color:var(--dim);line-height:1.7;margin-bottom:8px}
+.ch-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:10px;font-family:var(--mono);letter-spacing:1.5px;
+  padding:5px 10px;border-radius:4px;margin-top:8px;text-transform:uppercase;
+}
+.ch-tag.amber{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.ch-tag.blue{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
+.ch-tag.cyan{background:rgba(6,182,212,.1);color:var(--cyan);border:1px solid rgba(6,182,212,.2)}
+.ch-tag.purple{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.2)}
+.ch-tag.emerald{background:rgba(16,185,129,.1);color:var(--emerald);border:1px solid rgba(16,185,129,.2)}
+
+/* KEY FIX: diagram-col must stretch full height (no align-items:flex-start on parent)
+   so sticky has room to work */
+.diagram-col{flex:1;min-width:0}
+.diagram-sticky{
+  position:sticky;
+  top:80px;
+  padding:0 0 0 32px;
+}
+.diagram-sticky svg{width:100%;height:auto;max-height:calc(100vh - 120px)}
+
+/* SVG LAYERS — always fully visible, active = extra glow */
+.arch-layer{transition:opacity .5s ease}
+.arch-layer{opacity:1}
+.arch-path{stroke-dasharray:none !important;stroke-dashoffset:0 !important}
+.arch-particle{opacity:1}
+
+/* FOOTER */
+.arch-footer{
+  min-height:80vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:80px 24px;
+}
+.arch-footer h2{
+  font-size:clamp(32px,4vw,52px);font-weight:200;
+  letter-spacing:-1.5px;color:var(--text);margin-bottom:16px;
+}
+.arch-footer p{
+  font-size:15px;color:var(--dim);max-width:480px;
+  line-height:1.6;margin-bottom:40px;
+}
+.cta-btn{
+  display:inline-block;padding:14px 36px;background:transparent;
+  border:1px solid var(--cyan);color:var(--cyan);
+  font-family:var(--mono);font-size:12px;letter-spacing:2px;
+  text-transform:uppercase;text-decoration:none;border-radius:6px;
+  transition:background .3s,color .3s;
+}
+.cta-btn:hover{background:var(--cyan);color:#06060f}
+
+/* MOBILE */
+@media(max-width:900px){
+  .arch-nav{padding:16px 24px}
+  .scroll-story{flex-direction:column;padding:0 24px}
+  .text-col{width:100%;order:2;padding:0 0 60px 0}
+  .diagram-col{order:1;width:100%}
+  .diagram-sticky{position:sticky;top:60px;padding:0;background:rgba(6,6,15,.9);z-index:10}
+  .diagram-sticky svg{max-height:55vw}
+  .chapter{min-height:auto;padding:40px 0;opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="arch-nav">
+  <a href="index.html" class="brand">Your Second Brain</a>
+  <a href="index.html" class="back-btn">← Back to overview</a>
+</nav>
+
+<section class="arch-hero">
+  <div class="eyebrow">Under the Hood</div>
+  <h1>System<br><span>Architecture</span></h1>
+  <p class="subtitle">A living knowledge infrastructure. Four data sources. One sync engine. Always on.</p>
+  <div class="scroll-hint">Scroll to explore</div>
+</section>
+
+<section class="scroll-story">
+
+  <div class="text-col">
+
+    <div class="chapter" id="ch-inputs" data-layer="inputs">
+      <div class="ch-num">01 — Data Sources</div>
+      <h3>The data flows in from four places</h3>
+      <p>ElevenLabs: a voice agent, amit reggel diktálsz. Hajni AI feldolgozza, exportálja.</p>
+      <p>MS365: naptárad, Teams üzeneteid, email inbox-od. Valós időben, automatikusan.</p>
+      <div class="ch-tag amber">🎤 ElevenLabs · Hajni AI</div>
+      <div class="ch-tag blue" style="margin-top:6px">🔷 Outlook · Teams · Calendar</div>
+    </div>
+
+    <div class="chapter" id="ch-sync" data-layer="sync">
+      <div class="ch-num">02 — The Engine</div>
+      <h3>The engine that never sleeps</h3>
+      <p><strong style="color:#06b6d4">productivity-sync</strong> naponta négyszer fut automatikusan.</p>
+      <p>Reggel 04:00: Full Mode — ElevenLabs + MS365 + Intel + archív snapshot. Napközben: Light Mode — csak email és Teams.</p>
+      <div class="ch-tag cyan">⚙ cron: 04:00 · 10:00 · 13:00 · 18:00</div>
+    </div>
+
+    <div class="chapter" id="ch-outputs" data-layer="outputs">
+      <div class="ch-num">03 — Intelligence Layer</div>
+      <h3>Everything has its place</h3>
+      <p><strong style="color:#f59e0b">TASKS.md</strong> — az egyetlen igazság forrása. Minden teendő, prioritás, határidő egy helyen.</p>
+      <p><strong style="color:#8b5cf6">NEWSLETTERS.md</strong> — 11 forrás szűrt intelligenciája: McKinsey, HBR, Lenny, The Batch és mások.</p>
+      <p><strong style="color:#94a3b8">memory/archive/</strong> — napi snapshotok, visszakereshető múlt.</p>
+      <div class="ch-tag amber">★ Single Source of Truth</div>
+    </div>
+
+    <div class="chapter" id="ch-interface" data-layer="interface">
+      <div class="ch-num">04 — The Interface</div>
+      <h3>One file. Zero backend.</h3>
+      <p><strong style="color:#10b981">dashboard.html</strong> — egyetlen HTML fájl, File System Access API-val olvas és ír.</p>
+      <p>Kanban board a TASKS.md-ből, intel viewer a NEWSLETTERS.md-ből. Offline fut. Nincs szerver, nincs adatbázis.</p>
+      <div class="ch-tag emerald">🖥 File System Access API · R/W</div>
+    </div>
+
+    <div class="chapter" id="ch-full" data-layer="full">
+      <div class="ch-num">05 — Always On</div>
+      <h3>Mire felkelsz, már kész</h3>
+      <p>Reggel 4-kor a rendszer feldolgozta az éjjeli üzeneteket, a hangfájlokat, az inbox-ot.</p>
+      <p>Nem kell emlékezni. Nem kell szinkronizálni. Csak megnyitod a dashboardot — és minden ott van.</p>
+      <div class="ch-tag cyan">✦ Automated · Continuous · Private</div>
+    </div>
+
+  </div>
+
+  <div class="diagram-col">
+    <div class="diagram-sticky">
+      <svg id="arch-svg" viewBox="0 0 1000 660" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <defs>
+          <filter id="fa" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="fc" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="fb" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="fe" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <pattern id="dots" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r=".7" fill="rgba(255,255,255,0.07)"/></pattern>
+          <linearGradient id="ga" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#130e00"/><stop offset="100%" stop-color="#0a0800"/></linearGradient>
+          <linearGradient id="gb" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#020c1a"/><stop offset="100%" stop-color="#010710"/></linearGradient>
+          <linearGradient id="gc" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#001d24"/><stop offset="100%" stop-color="#000f15"/></linearGradient>
+          <linearGradient id="gp" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d0018"/><stop offset="100%" stop-color="#080010"/></linearGradient>
+          <linearGradient id="gsl" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0b0e13"/><stop offset="100%" stop-color="#070a0d"/></linearGradient>
+          <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#001812"/><stop offset="100%" stop-color="#000d09"/></linearGradient>
+          <marker id="ma" markerWidth="6" markerHeight="6" refX="4.5" refY="3" orient="auto"><path d="M 0 1 L 4.5 3 L 0 5 Z" fill="#f59e0b" opacity=".6"/></marker>
+          <marker id="mb" markerWidth="6" markerHeight="6" refX="4.5" refY="3" orient="auto"><path d="M 0 1 L 4.5 3 L 0 5 Z" fill="#3b82f6" opacity=".6"/></marker>
+          <marker id="mp" markerWidth="6" markerHeight="6" refX="4.5" refY="3" orient="auto"><path d="M 0 1 L 4.5 3 L 0 5 Z" fill="#8b5cf6" opacity=".6"/></marker>
+          <marker id="msl" markerWidth="6" markerHeight="6" refX="4.5" refY="3" orient="auto"><path d="M 0 1 L 4.5 3 L 0 5 Z" fill="#94a3b8" opacity=".5"/></marker>
+          <marker id="mem" markerWidth="6" markerHeight="6" refX="4.5" refY="3" orient="auto"><path d="M 0 1 L 4.5 3 L 0 5 Z" fill="#10b981" opacity=".6"/></marker>
+        </defs>
+
+        <rect width="1000" height="660" fill="#06060f"/>
+        <rect width="1000" height="660" fill="url(#dots)"/>
+
+        <!-- INPUT → SYNC CONNECTIONS -->
+        <g id="gl-conn-in">
+          <path class="arch-path" id="p-el-exp" d="M 115 115 L 115 158" stroke="#f59e0b" stroke-width="1.2" stroke-opacity=".4" stroke-dasharray="4 3" fill="none"/>
+          <path class="arch-path" id="p-exp-sync" d="M 115 213 C 115 258 195 272 280 272" stroke="#f59e0b" stroke-width="1.5" stroke-opacity=".5" fill="none" marker-end="url(#ma)"/>
+          <path class="arch-path" id="p-oc-sync" d="M 453 128 C 453 205 440 265 430 272" stroke="#3b82f6" stroke-width="1.5" stroke-opacity=".5" fill="none" marker-end="url(#mb)"/>
+          <path class="arch-path" id="p-tm-sync" d="M 647 128 C 647 205 562 262 545 272" stroke="#3b82f6" stroke-width="1.5" stroke-opacity=".5" fill="none" marker-end="url(#mb)"/>
+          <path class="arch-path" id="p-oe-sync" d="M 842 128 C 842 210 728 262 700 272" stroke="#3b82f6" stroke-width="1.5" stroke-opacity=".5" fill="none" marker-end="url(#mb)"/>
+        </g>
+
+        <!-- SYNC → OUTPUT CONNECTIONS -->
+        <g id="gl-conn-out">
+          <path class="arch-path" id="p-sync-nl" d="M 278 373 C 210 428 165 437 135 440" stroke="#8b5cf6" stroke-width="1.5" stroke-opacity=".45" stroke-dasharray="5 3" fill="none" marker-end="url(#mp)"/>
+          <path class="arch-path" id="p-sync-tk" d="M 500 373 L 500 433" stroke="#f59e0b" stroke-width="2" stroke-opacity=".65" fill="none" marker-end="url(#ma)"/>
+          <path class="arch-path" id="p-sync-arc" d="M 712 373 C 798 428 848 437 868 440" stroke="#94a3b8" stroke-width="1.5" stroke-opacity=".38" stroke-dasharray="5 3" fill="none" marker-end="url(#msl)"/>
+          <text font-size="8" fill="rgba(139,92,246,.5)" font-family="'SF Mono',monospace"><textPath xlink:href="#p-sync-nl" startOffset="20%">04:00 only</textPath></text>
+          <text font-size="8" fill="rgba(148,163,184,.4)" font-family="'SF Mono',monospace"><textPath xlink:href="#p-sync-arc" startOffset="20%">04:00 only</textPath></text>
+        </g>
+
+        <!-- INTERFACE CONNECTIONS -->
+        <g id="gl-conn-iface">
+          <path class="arch-path" id="p-tk-dash" d="M 478 523 C 462 550 445 560 430 568" stroke="#10b981" stroke-width="1.5" stroke-opacity=".6" fill="none" marker-end="url(#mem)"/>
+          <path class="arch-path" id="p-dash-tk" d="M 444 568 C 462 555 475 538 492 523" stroke="#10b981" stroke-width="1.2" stroke-opacity=".3" stroke-dasharray="4 3" fill="none" marker-end="url(#mem)"/>
+          <path class="arch-path" id="p-nl-dash" d="M 135 520 C 135 548 210 560 270 568" stroke="#8b5cf6" stroke-width="1.2" stroke-opacity=".35" fill="none" marker-end="url(#mp)"/>
+          <text x="512" y="542" font-size="8" fill="rgba(16,185,129,.5)" font-family="'SF Mono',monospace">⇅ R/W</text>
+          <text font-size="8" fill="rgba(139,92,246,.4)" font-family="'SF Mono',monospace"><textPath xlink:href="#p-nl-dash" startOffset="25%">read-only</textPath></text>
+        </g>
+
+        <!-- ELEVENLABS GROUP -->
+        <g id="gl-elevenlabs" class="arch-layer dim">
+          <rect x="20" y="35" width="190" height="80" rx="9" fill="#f59e0b" opacity=".04" filter="url(#fa)"/>
+          <rect x="20" y="35" width="190" height="80" rx="9" fill="url(#ga)" stroke="#f59e0b" stroke-width="1.3" stroke-opacity=".6"/>
+          <rect x="20" y="35" width="190" height="80" rx="9" fill="none" stroke="#f59e0b" stroke-width="1.3"><animate attributeName="stroke-opacity" values=".6;.15;.6" dur="3s" repeatCount="indefinite"/></rect>
+          <text x="40" y="73" font-size="20" font-family="system-ui">🎤</text>
+          <text x="68" y="65" font-size="12" font-weight="600" fill="#f59e0b" font-family="'SF Mono',monospace">ElevenLabs</text>
+          <text x="68" y="79" font-size="9.5" fill="rgba(245,158,11,.65)" font-family="'SF Mono',monospace">Voice Agent</text>
+          <text x="68" y="92" font-size="9.5" fill="rgba(245,158,11,.45)" font-family="'SF Mono',monospace">Hajni AI</text>
+          <rect x="20" y="158" width="190" height="55" rx="7" fill="url(#ga)" stroke="#f59e0b" stroke-width=".8" stroke-opacity=".28"/>
+          <text x="40" y="184" font-size="11" fill="rgba(245,158,11,.3)" font-family="system-ui">📁</text>
+          <text x="58" y="183" font-size="9.5" fill="rgba(245,158,11,.5)" font-family="'SF Mono',monospace" font-weight="500">elevenlabs_exports/</text>
+          <text x="58" y="196" font-size="8.5" fill="rgba(245,158,11,.3)" font-family="'SF Mono',monospace">Temp Transcripts</text>
+        </g>
+
+        <!-- MS365 GROUP -->
+        <g id="gl-ms365" class="arch-layer dim">
+          <rect x="350" y="15" width="635" height="148" rx="10" fill="#010b18" stroke="#3b82f6" stroke-width=".8" stroke-opacity=".18" stroke-dasharray="4 3"/>
+          <text x="667" y="31" font-size="8.5" fill="rgba(59,130,246,.4)" font-family="'SF Mono',monospace" letter-spacing="2.5" text-anchor="middle">MS 365 · DATA SOURCES</text>
+          <rect x="363" y="38" width="180" height="90" rx="9" fill="url(#gb)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+          <text x="383" y="78" font-size="25" font-weight="700" fill="#3b82f6" font-family="-apple-system,sans-serif" opacity=".7">OC</text>
+          <text x="383" y="96" font-size="9.5" fill="rgba(59,130,246,.7)" font-family="'SF Mono',monospace">Outlook</text>
+          <text x="383" y="109" font-size="9.5" fill="rgba(59,130,246,.7)" font-family="'SF Mono',monospace">Calendar</text>
+          <rect x="557" y="38" width="180" height="90" rx="9" fill="url(#gb)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+          <text x="577" y="78" font-size="25" font-weight="700" fill="#3b82f6" font-family="-apple-system,sans-serif" opacity=".7">TM</text>
+          <text x="577" y="96" font-size="9.5" fill="rgba(59,130,246,.7)" font-family="'SF Mono',monospace">Teams</text>
+          <text x="577" y="109" font-size="9.5" fill="rgba(59,130,246,.7)" font-family="'SF Mono',monospace">Messages</text>
+          <rect x="751" y="38" width="180" height="90" rx="9" fill="url(#gb)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+          <text x="771" y="78" font-size="25" font-weight="700" fill="#3b82f6" font-family="-apple-system,sans-serif" opacity=".7">OE</text>
+          <text x="771" y="96" font-size="9.5" fill="rgba(59,130,246,.7)" font-family="'SF Mono',monospace">Outlook</text>
+          <text x="771" y="109" font-size="9.5" fill="rgba(59,130,246,.7)" font-family="'SF Mono',monospace">Email</text>
+        </g>
+
+        <!-- PRODUCTIVITY-SYNC -->
+        <g id="gl-sync" class="arch-layer dim">
+          <rect x="195" y="268" width="610" height="105" rx="14" fill="#06b6d4" opacity=".04"><animate attributeName="opacity" values=".04;.10;.04" dur="4.5s" repeatCount="indefinite"/></rect>
+          <rect x="195" y="268" width="610" height="105" rx="14" fill="#06b6d4" opacity=".03" filter="url(#fc)"/>
+          <rect x="195" y="268" width="610" height="105" rx="14" fill="url(#gc)" stroke="#06b6d4" stroke-width="1.6" stroke-opacity=".6"/>
+          <rect x="195" y="268" width="610" height="3" rx="2" fill="#06b6d4" opacity=".5"/>
+          <rect x="195" y="268" width="610" height="105" rx="14" fill="none" stroke="#06b6d4" stroke-width="1.6"><animate attributeName="stroke-opacity" values=".6;.15;.6" dur="4.5s" repeatCount="indefinite"/></rect>
+          <text x="258" y="307" font-size="9" fill="rgba(6,182,212,.45)" font-family="'SF Mono',monospace" letter-spacing="3">CENTRAL SYNC ENGINE</text>
+          <text x="258" y="333" font-size="21" font-weight="500" fill="#06b6d4" font-family="-apple-system,'Helvetica Neue',sans-serif" letter-spacing="-.5">productivity-sync</text>
+          <text x="258" y="353" font-size="9" fill="rgba(6,182,212,.45)" font-family="'SF Mono',monospace" letter-spacing="1.5">cron  ·  04:00  ·  10:00  ·  13:00  ·  18:00</text>
+          <text x="212" y="334" font-size="30" font-family="system-ui" opacity=".3">⚙</text>
+        </g>
+
+        <!-- OUTPUT NODES -->
+        <g id="gl-outputs" class="arch-layer dim">
+          <rect x="20" y="438" width="230" height="82" rx="9" fill="url(#gp)" stroke="#8b5cf6" stroke-width="1" stroke-opacity=".48"/>
+          <text x="38" y="466" font-size="11" font-weight="600" fill="#8b5cf6" font-family="'SF Mono',monospace" letter-spacing="-.2">NEWSLETTERS.md</text>
+          <text x="38" y="480" font-size="9" fill="rgba(139,92,246,.6)" font-family="'SF Mono',monospace">Intel Feed · 11 Sources</text>
+          <text x="38" y="493" font-size="8.5" fill="rgba(139,92,246,.35)" font-family="'SF Mono',monospace">McKinsey · HBR · Lenny · Batch…</text>
+          <rect x="340" y="433" width="320" height="90" rx="11" fill="#f59e0b" opacity=".04" filter="url(#fa)"/>
+          <rect x="340" y="433" width="320" height="90" rx="11" fill="url(#ga)" stroke="#f59e0b" stroke-width="1.5" stroke-opacity=".65"/>
+          <rect x="340" y="433" width="320" height="3" rx="2" fill="#f59e0b" opacity=".45"/>
+          <rect x="340" y="433" width="320" height="90" rx="11" fill="none" stroke="#f59e0b" stroke-width="1.5"><animate attributeName="stroke-opacity" values=".65;.15;.65" dur="3.5s" repeatCount="indefinite"/></rect>
+          <text x="360" y="461" font-size="8.5" fill="rgba(245,158,11,.45)" font-family="'SF Mono',monospace" letter-spacing="2.5">SINGLE SOURCE OF TRUTH</text>
+          <text x="360" y="483" font-size="20" font-weight="600" fill="#f59e0b" font-family="-apple-system,'Helvetica Neue',sans-serif">TASKS.md</text>
+          <text x="360" y="499" font-size="9" fill="rgba(245,158,11,.5)" font-family="'SF Mono',monospace">Aktív feladatlista · Weekly Priority</text>
+          <text x="612" y="478" font-size="22" fill="#f59e0b" opacity=".5" font-family="system-ui">★</text>
+          <rect x="758" y="438" width="222" height="82" rx="9" fill="url(#gsl)" stroke="#94a3b8" stroke-width=".8" stroke-opacity=".3"/>
+          <text x="776" y="460" font-size="11" font-family="system-ui" opacity=".3">📁</text>
+          <text x="796" y="460" font-size="9.5" font-weight="600" fill="#94a3b8" font-family="'SF Mono',monospace" opacity=".6">memory/archive/</text>
+          <text x="796" y="474" font-size="9" fill="rgba(148,163,184,.4)" font-family="'SF Mono',monospace">Napi Snapshots</text>
+          <text x="796" y="487" font-size="8.5" fill="rgba(148,163,184,.28)" font-family="'SF Mono',monospace">tasks_YYYY-MM-DD.md</text>
+        </g>
+
+        <!-- DASHBOARD -->
+        <g id="gl-interface" class="arch-layer dim">
+          <rect x="92" y="560" width="660" height="78" rx="11" fill="#10b981" opacity=".03" filter="url(#fe)"/>
+          <rect x="92" y="560" width="660" height="78" rx="11" fill="url(#gem)" stroke="#10b981" stroke-width="1.2" stroke-opacity=".48"/>
+          <rect x="92" y="560" width="3" height="78" rx="1.5" fill="#10b981" opacity=".5"/>
+          <text x="116" y="591" font-size="8.5" fill="rgba(16,185,129,.45)" font-family="'SF Mono',monospace" letter-spacing="2.5">INTERFACE</text>
+          <text x="116" y="612" font-size="17" font-weight="500" fill="#10b981" font-family="-apple-system,'Helvetica Neue',sans-serif">dashboard.html</text>
+          <text x="116" y="628" font-size="9" fill="rgba(16,185,129,.4)" font-family="'SF Mono',monospace">Kanban Board · Intel Viewer · File System Access API</text>
+          <text x="695" y="608" font-size="24" font-family="system-ui" opacity=".28">🖥</text>
+        </g>
+
+        <!-- PARTICLES -->
+        <g id="gl-particles">
+          <circle class="arch-particle" r="3" fill="#f59e0b" opacity=".9" filter="url(#fa)"><animateMotion dur="2.8s" repeatCount="indefinite" begin="0s"><mpath xlink:href="#p-exp-sync"/></animateMotion></circle>
+          <circle class="arch-particle" r="2" fill="#f59e0b" opacity=".5"><animateMotion dur="2.8s" repeatCount="indefinite" begin="1.4s"><mpath xlink:href="#p-exp-sync"/></animateMotion></circle>
+          <circle class="arch-particle" r="2.5" fill="#3b82f6" opacity=".85" filter="url(#fb)"><animateMotion dur="2.3s" repeatCount="indefinite" begin=".2s"><mpath xlink:href="#p-oc-sync"/></animateMotion></circle>
+          <circle class="arch-particle" r="2.5" fill="#3b82f6" opacity=".85" filter="url(#fb)"><animateMotion dur="2.1s" repeatCount="indefinite" begin=".7s"><mpath xlink:href="#p-tm-sync"/></animateMotion></circle>
+          <circle class="arch-particle" r="2.5" fill="#3b82f6" opacity=".85" filter="url(#fb)"><animateMotion dur="2.5s" repeatCount="indefinite" begin=".1s"><mpath xlink:href="#p-oe-sync"/></animateMotion></circle>
+          <circle class="arch-particle" r="2.5" fill="#8b5cf6" opacity=".75"><animateMotion dur="4s" repeatCount="indefinite" begin="1s"><mpath xlink:href="#p-sync-nl"/></animateMotion></circle>
+          <circle class="arch-particle" r="3.5" fill="#f59e0b" opacity=".9" filter="url(#fa)"><animateMotion dur="1.6s" repeatCount="indefinite" begin="0s"><mpath xlink:href="#p-sync-tk"/></animateMotion></circle>
+          <circle class="arch-particle" r="2.5" fill="#f59e0b" opacity=".55"><animateMotion dur="1.6s" repeatCount="indefinite" begin=".8s"><mpath xlink:href="#p-sync-tk"/></animateMotion></circle>
+          <circle class="arch-particle" r="2" fill="#94a3b8" opacity=".6"><animateMotion dur="4.5s" repeatCount="indefinite" begin="2s"><mpath xlink:href="#p-sync-arc"/></animateMotion></circle>
+          <circle class="arch-particle" r="2.5" fill="#10b981" opacity=".8" filter="url(#fe)"><animateMotion dur="2.2s" repeatCount="indefinite" begin=".5s"><mpath xlink:href="#p-tk-dash"/></animateMotion></circle>
+          <circle class="arch-particle" r="2" fill="#10b981" opacity=".5"><animateMotion dur="2.2s" repeatCount="indefinite" begin="1.2s"><mpath xlink:href="#p-dash-tk"/></animateMotion></circle>
+          <circle class="arch-particle" r="2" fill="#8b5cf6" opacity=".6"><animateMotion dur="3.5s" repeatCount="indefinite" begin="1.5s"><mpath xlink:href="#p-nl-dash"/></animateMotion></circle>
+        </g>
+
+      </svg>
+    </div>
+  </div>
+
+</section>
+
+<section class="arch-footer">
+  <div class="eyebrow">Ready?</div>
+  <h2>Join the waitlist</h2>
+  <p>Korlátozott számú hely. Első tesztelők bekerülnek az alapítói körébe.</p>
+  <a href="index.html#act6" class="cta-btn">Apply to test →</a>
+</section>
+
+<script>
+// Chapters: highlight active one as user scrolls
+const chapters = document.querySelectorAll('.chapter');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      chapters.forEach(c => c.classList.remove('active'));
+      e.target.classList.add('active');
+    }
+  });
+}, { threshold: 0.55 });
+
+chapters.forEach(ch => observer.observe(ch));
+
+// Activate first immediately
+setTimeout(() => {
+  const first = document.querySelector('.chapter');
+  if (first) first.classList.add('active');
+}, 100);
+
+// ─── Hover tooltips ───
+const tooltips = {
+  'gl-elevenlabs': {
+    title: 'ElevenLabs Voice Agent — Hajni AI',
+    body: 'Reggel diktálod a gondolataidat. Hajni AI (ElevenLabs Conversational AI) feldolgozza, a transcript exportálódik az elevenlabs_exports/ mappába. A 04:00-ás sync innen szedi ki az action itemeket.'
+  },
+  'gl-ms365': {
+    title: 'MS365 Data Sources',
+    body: 'OC = Outlook Calendar · TM = Teams Messages · OE = Outlook Email. Mind a három forrásból kinyeri a teendőket, határidőket, vállalásokat. Light módban (10:00, 13:00, 18:00) csak ez a három fut.'
+  },
+  'gl-sync': {
+    title: 'productivity-sync — Central Engine',
+    body: 'A rendszer szíve. Naponta 4x fut (cron). 04:00: Full mode — ElevenLabs + MS365 + newsletter intel + daily archive snapshot. 10:00 / 13:00 / 18:00: Light mode — csak email + Teams scan + TASKS.md update.'
+  },
+  'gl-outputs': {
+    title: 'Intelligence Layer',
+    body: 'TASKS.md: az egyetlen igazság forrása, minden teendő itt él. NEWSLETTERS.md: 11 hírlevél (McKinsey, HBR, Lenny, The Batch, stb.) szűrt intel feedje. memory/archive/: napi tasks_YYYY-MM-DD.md snapshotok — a múlt visszakereshető.'
+  },
+  'gl-interface': {
+    title: 'dashboard.html — The Interface',
+    body: 'Egyetlen HTML fájl, zero backend. File System Access API-val közvetlenül olvassa és írja a TASKS.md-t és NEWSLETTERS.md-t. Kanban board, intel viewer, offline működés. Nincs szerver, nincs adatbázis, nincs cloud dependency.'
+  }
+};
+
+const tooltip = document.createElement('div');
+tooltip.style.cssText = `
+  position:fixed;z-index:999;pointer-events:none;
+  background:rgba(6,6,15,0.97);border:1px solid rgba(6,182,212,0.3);
+  border-radius:10px;padding:16px 20px;max-width:320px;
+  backdrop-filter:blur(16px);opacity:0;
+  transition:opacity 0.2s ease,transform 0.2s ease;
+  transform:translateY(6px);
+  box-shadow:0 4px 32px rgba(0,0,0,0.6),0 0 0 1px rgba(6,182,212,0.1);
+`;
+document.body.appendChild(tooltip);
+
+Object.entries(tooltips).forEach(([id, info]) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.cursor = 'default';
+
+  el.addEventListener('mouseenter', e => {
+    tooltip.innerHTML = `
+      <div style="font-size:10px;letter-spacing:2px;color:#06b6d4;font-family:'SF Mono',monospace;text-transform:uppercase;margin-bottom:8px;">${info.title}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.65);font-family:-apple-system,sans-serif;line-height:1.6;">${info.body}</div>
+    `;
+    tooltip.style.opacity = '1';
+    tooltip.style.transform = 'translateY(0)';
+    moveTooltip(e);
+  });
+
+  el.addEventListener('mousemove', moveTooltip);
+
+  el.addEventListener('mouseleave', () => {
+    tooltip.style.opacity = '0';
+    tooltip.style.transform = 'translateY(6px)';
+  });
+});
+
+function moveTooltip(e) {
+  const tw = 340, th = 120;
+  let x = e.clientX + 16;
+  let y = e.clientY + 16;
+  if (x + tw > window.innerWidth - 16) x = e.clientX - tw - 16;
+  if (y + th > window.innerHeight - 16) y = e.clientY - th - 16;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top  = y + 'px';
+}
+</script>
+
+</body>
+</html>
